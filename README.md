@@ -58,15 +58,3 @@ Prefijos /64 asignados desde 2001:25:22::/48, en el mismo orden que IPv4 (la red
 - HSRP para alta disponibilidad de gateway
 - OSPFv2 para enrutamiento dinámico entre routers
 
-## Estructura del repositorio
-
-configs/      configuraciones de cada dispositivo
-topologia/    diagrama y mapa de puertos
-pruebas/      scripts y resultados de pruebas
-README.md     este documento
-
-## Estado del proyecto
-
-Sprint 1: diseño de direccionamiento, topología y VLANs - completado
-Sprint 2: VLANs, VTP, STP, EtherChannel, HSRP - en progreso
-Sprint 3: OSPFv2, pruebas y documentación final - pendiente
