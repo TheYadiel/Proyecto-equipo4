@@ -1,0 +1,362 @@
+
+=========
+R1-Core
+========
+
+enable
+configure terminal
+ipv6 unicast-routing
+
+interface e0/0
+ duplex full
+ no shutdown
+ exit
+
+interface e0/0.10
+ encapsulation dot1Q 10
+ ip address 172.22.0.2 255.255.248.0
+ ipv6 address 2001:25:22:1::2/64
+ standby 10 ip 172.22.0.1
+ standby 10 priority 110
+ standby 10 preempt
+ exit
+
+interface e0/0.20
+ encapsulation dot1Q 20
+ ip address 172.22.8.2 255.255.255.0
+ ipv6 address 2001:25:22:2::2/64
+ standby 20 ip 172.22.8.1
+ standby 20 priority 110
+ standby 20 preempt
+ exit
+
+interface e0/0.30
+ encapsulation dot1Q 30
+ ip address 172.22.9.2 255.255.255.224
+ ipv6 address 2001:25:22:3::2/64
+ standby 30 ip 172.22.9.1
+ standby 30 priority 110
+ standby 30 preempt
+ exit
+
+interface e0/0.40
+ encapsulation dot1Q 40
+ ip address 172.22.9.34 255.255.255.224
+ ipv6 address 2001:25:22:4::2/64
+ standby 40 ip 172.22.9.33
+ standby 40 priority 110
+ standby 40 preempt
+ exit
+
+interface e0/0.99
+ encapsulation dot1Q 99
+ ip address 172.22.9.66 255.255.255.240
+ ipv6 address 2001:25:22:5::2/64
+ standby 99 ip 172.22.9.65
+ standby 99 priority 110
+ standby 99 preempt
+ exit
+
+interface e0/2
+ ip address dhcp
+ no shutdown
+ exit
+
+interface s1/0
+ ip address 172.22.11.81 255.255.255.252
+ ipv6 address 2001:25:22:a::1/64
+ no shutdown
+ exit
+
+router ospf 1
+ router-id 1.1.1.1
+ network 172.22.0.0 0.0.7.255 area 0
+ network 172.22.8.0 0.0.0.255 area 0
+ network 172.22.9.0 0.0.0.31 area 0
+ network 172.22.9.32 0.0.0.31 area 0
+ network 172.22.9.64 0.0.0.15 area 0
+ network 172.22.11.80 0.0.0.3 area 0
+ default-information originate
+ exit
+
+ip route 0.0.0.0 0.0.0.0 203.0.113.1
+
+
+=======
+R2
+========
+
+enable
+configure terminal
+ipv6 unicast-routing
+
+interface e0/0
+ duplex full
+ no shutdown
+ exit
+
+interface e0/0.50
+ encapsulation dot1Q 50
+ ip address 172.22.10.2 255.255.255.128
+ ipv6 address 2001:25:22:6::2/64
+ standby 50 ip 172.22.10.1
+ standby 50 priority 110
+ standby 50 preempt
+ exit
+
+interface e0/0.60
+ encapsulation dot1Q 60
+ ip address 172.22.10.130 255.255.255.128
+ ipv6 address 2001:25:22:7::2/64
+ standby 60 ip 172.22.10.129
+ standby 60 priority 110
+ standby 60 preempt
+ exit
+
+interface e0/0.88
+ encapsulation dot1Q 88
+ ip address 172.22.11.66 255.255.255.240
+ ipv6 address 2001:25:22:9::2/64
+ standby 88 ip 172.22.11.65
+ standby 88 priority 110
+ standby 88 preempt
+ exit
+
+interface e0/1
+ duplex full
+ no shutdown
+ exit
+
+interface e0/1.70
+ encapsulation dot1Q 70
+ ip address 172.22.11.2 255.255.255.192
+ ipv6 address 2001:25:22:8::2/64
+ standby 70 ip 172.22.11.1
+ standby 70 priority 110
+ standby 70 preempt
+ exit
+
+interface s1/0
+ ip address 172.22.11.82 255.255.255.252
+ ipv6 address 2001:25:22:a::2/64
+ no shutdown
+ exit
+
+router ospf 1
+ router-id 2.2.2.2
+ network 172.22.10.0 0.0.0.127 area 0
+ network 172.22.10.128 0.0.0.127 area 0
+ network 172.22.11.0 0.0.0.63 area 0
+ network 172.22.11.64 0.0.0.15 area 0
+ network 172.22.11.80 0.0.0.3 area 0
+ exit
+
+=======
+SWM1
+=======
+
+enable
+configure terminal
+
+vtp domain ITLA
+vtp mode server
+vtp version 2
+
+vlan 10
+ name Estudiantes
+vlan 20
+ name Docentes
+vlan 30
+ name Gestion
+vlan 40
+ name Voz
+vlan 50
+ name Academicos
+vlan 60
+ name Finanzas
+vlan 70
+ name Datacenter
+vlan 88
+ name Blackhull_R2
+vlan 99
+ name Blackhull_R1
+exit
+
+spanning-tree mode rapid-pvst
+spanning-tree vlan 10,20,30,40,50,60,70,88,99 root primary
+
+interface range e0/1 - 3
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ channel-group 1 mode active
+ no shutdown
+ exit
+
+interface port-channel 1
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ exit
+
+interface range e0/0, e1/0, e1/1, e1/2
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ no shutdown
+ exit
+ 
+ 
+=======
+SWM2
+=======
+
+enable
+configure terminal
+
+vtp domain ITLA
+vtp mode client
+
+spanning-tree mode rapid-pvst
+spanning-tree vlan 10,20,30,40,50,60,70,88,99 root secondary
+
+interface range e0/1 - 3
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ channel-group 1 mode active
+ no shutdown
+ exit
+
+interface port-channel 1
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ exit
+
+interface range e0/0, e1/0, e1/1, e1/2
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ no shutdown
+ exit
+ 
+ 
+=======
+SWAC1
+=======
+
+enable
+configure terminal
+vtp domain ITLA
+vtp mode client
+
+interface range e0/0 - 1
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ no shutdown
+ exit
+
+interface e1/0
+ switchport mode access
+ switchport access vlan 20
+ spanning-tree portfast
+ no shutdown
+ exit
+
+=======
+SWAC2
+========
+
+enable
+configure terminal
+vtp domain ITLA
+vtp mode client
+
+interface range e0/0 - 1
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ no shutdown
+ exit
+
+interface e2/0
+ switchport mode access
+ switchport access vlan 10
+ spanning-tree portfast
+ no shutdown
+ exit
+ 
+
+=======
+SWAC3 
+========
+
+enable
+configure terminal
+vtp domain ITLA
+vtp mode client
+
+interface range e0/0 - 1
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ no shutdown
+ exit
+
+interface e3/0
+ switchport mode access
+ switchport access vlan 30
+ spanning-tree portfast
+ no shutdown
+ exit
+ 
+ 
+========
+SWA13 
+=========
+
+enable
+configure terminal
+vlan 50
+ name Academicos
+vlan 60
+ name Finanzas
+exit
+
+interface e0/0
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ no shutdown
+ exit
+
+interface e1/0
+ switchport mode access
+ switchport access vlan 50
+ spanning-tree portfast
+ no shutdown
+ exit
+
+interface e2/0
+ switchport mode access
+ switchport access vlan 60
+ spanning-tree portfast
+ no shutdown
+ exit
+ 
+ 
+ 
+=============
+SW Datacenter
+==============
+
+enable
+configure terminal
+vlan 70
+ name Datacenter
+exit
+
+interface e0/0
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ no shutdown
+ exit
+
+interface e0/1
+ switchport mode access
+ switchport access vlan 70
+ spanning-tree portfast
+ no shutdown
+ exit
